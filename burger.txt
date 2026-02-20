@@ -1,0 +1,70 @@
+#include <iostream>
+#include <vector>
+#include <cmath>
+#include <iomanip>
+
+const int grid = 100;          
+const double length = 2.0;       
+const double step = length / (grid - 1); 
+const int time_steps = 120; 
+const double viscocity = 0.1;      
+const double SIGMA = 0.2;   
+const double DT = SIGMA * pow(step, 2) / viscocity; 
+
+int main() {
+    // GRid
+    std::vector<double> u(grid, 1.0);      
+    std::vector<double> u_new(grid, 1.0);  
+
+    // Initial
+    for (int i = 0; i < grid; i++) {
+        double x = i * step;
+        if (x >= 0.5 && x <= 1.0) {
+            u[i] = 2.0;
+        } else {
+            u[i] = 1.0;
+        }
+    }
+
+    std::cout  << time_steps << " time steps" << std::endl;
+
+    // Time loop 
+    for (int n = 0; n < time_steps; ++n) {
+        
+        
+        for (int i = 1; i < grid - 1; ++i) {
+            double u_curr = u[i];
+            double u_prev = u[i-1];
+            double u_next = u[i+1];
+
+            // Diffusion  
+            double diffusion = viscocity * (u_next - 2.0 * u_curr + u_prev) / (step * step);
+
+            // Convection  
+            double convection = u_curr * (u_curr - u_prev) / step;
+
+           
+            u_new[i] = u_curr + DT * (diffusion - convection);
+        }
+
+      
+        u_new[0] = 1.0;
+        u_new[grid - 1] = 1.0;
+
+       
+        u = u_new;
+    }
+
+    // 
+    std::cout << "\nFinal State (t = " << time_steps * DT << "):" << std::endl;
+    std::cout << "Index\tPosition(x)\tVelocity(u)" << std::endl;
+    std::cout << "------------------------------------" << std::endl;
+
+    for (int i = 0; i < grid; i++) {
+        std::cout << i << "\t" 
+                  << std::fixed << std::setprecision(4) << i * step << "\t\t" 
+                  << u[i] << std::endl;
+    }
+
+    return 0;
+}
